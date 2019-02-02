@@ -1,40 +1,67 @@
 #!/usr/bin/env python
 import tweepy
 import datetime,json,os,random,sys,textwrap,time
+def make_line(cha,leng): return ''.join([cha for x in range(0,leng)])
+
 def access_twitter(conf=None):
+	"""
+	requires a JSON file with your API keys
+	logins into the API and returns the tweepy API object
+	"""
 	with open(conf,'r') as f: data = json.load(f)
 	auth = tweepy.OAuthHandler(data['consumer_key'], data['consumer_secret'])
 	auth.set_access_token(data['access_token'], data['access_token_secret'])
 	api = tweepy.API(auth,wait_on_rate_limit_notify=True)
 	return api
+
+####### LOGGING #######
 def load_history():
+	"""stores all the tweets that the bot tweeted"""
 	log=[]
 	with open("tweets/marcus_aurelius.log",'r') as f:
 		for l in f: log.append(l.rstrip())
 	return log
 def write_history(tweets):
+	"""append to the log file"""
 	log = open("tweets/marcus_aurelius.log",'a')
 	log.write('{}\n'.format('\n'.join(tweets)))
 	log.close()
-def make_line(cha,leng): return ''.join([cha for x in range(0,leng)])
-def get_tweets(users,api):
-	usr_twt = {}
-	ln = make_line('_',30)
-	ts = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S')
+def check_tweet(tweets,log):
+	"""returns 1 if the tweet has been tweeted before"""
+	done = 0 
+	for t in tweets: 
+		if t in log: done=1
+	return done
+### END OF LOGGING ###
+
+####### RETRIEVE TWEETS #######
+def get_tweets(users,api,n_tweets):
+	
+	usr_twt = {} #dict of the tweetid and user
+	# this is used to display the tweet you're replying to
+
+	ln,ts= make_line('_',30),datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S')
 	ofh = 'tweets/maurelius.{}.tweets.txt'.format(ts)
 	out = open(ofh,'a')
 	sys.stdout.write('\n{}\nCollecting tweets...\n'.format(ln))
 	for u in users:
 		sys.stdout.write('    {}\n'.format(u))
-		tweets = api.user_timeline(screen_name=u,count=10,tweet_mode='extended')
+		# tweets is a list of Status objects (see tweepy api)
+		tweets = api.user_timeline(screen_name=u,count=n_tweets,tweet_mode='extended')
 		for tw in tweets:
+			# store the tweet for later
 			if usr_twt.get(tw.id)==None:  usr_twt[tw.id]=[tw.full_text]
 			else: usr_twt[tw.id].append(tw.full_text) 
+
+			# write out the tweet. format: tweet ID, username, keyword
 			for wrd in tw.full_text.split(' '): out.write('{}\t@{}\t{}\n'.format(tw.id,u,wrd))
+
 	out.close()
 	sys.stdout.write('\n{}\n'.format(ln))
 	return ofh,usr_twt
+
 def load_tweets(fh):
+	"""load your tweets, the tweets matched on keywords"""
 	# KW -> ID, TWEET-ID -> [TWEETS], KW -> [TWEET-IDs]
 	kw_dict, twt_dict, tid_dict = {}, {}, {}
 	with open(fh) as f:
@@ -46,36 +73,46 @@ def load_tweets(fh):
 			if tid_dict.get(kw)==None: tid_dict[kw]=[ind]
 			else: tid_dict[kw].append(ind) 
 	return kw_dict, twt_dict, tid_dict
+### END OF RETRIEVE TWEETS ###
+
+####### USER FUNCTIONS #######
 def query_tweets(tid):
 	ask = input('Please select tweet according to tweet number...\n')
 	return ask
 def pick_tweets(tid, twt_dict):
+	"""
+	this shows available tweets that match on a keyword.
+	it shows the user the first 3 tweets and asks to select one,
+	if the user does not input a correct number, then the prompt
+	  will ask if to display more tweets. If no, the program exits.
+	  If yes, the program will display the next 3 tweets. 
+	The process repeats until there are no more tweets to show.
+
+	This function returns the tweet-id (not the tweepy id)
+	WARN! bugs abound here, use at your own risk!
+	"""
 	ln = make_line('_',45)
 	sys.stdout.write('\nNumber of Tweets:    {}\nDisplaying first 3 tweets...\n\n'.format(len(tid)))
 	chosen='y'
 	for i,e in enumerate(tid):
 		if chosen in tid: break
 		if i==0: i+=1
-		if i%3==0: 
+		if i%3==0: # if the third tweet is reached
 			chosen = query_tweets(tid)
 			if chosen not in tid:
 				ask = input('\n{} Not a correct tweet number.\n    Display more tweets? [y/n]\n'.format(chosen))
 				if ask != 'y': 
 					sys.stdout.write('\nExiting!\n')
 					sys.exit(0)
-		tws = ' * '.join(twt_dict[e])
+		tws = ' * '.join(twt_dict[e]) # join replies that span 2 tweets separated by a star
 		sys.stdout.write('\n{}\n{}\n{}\n{}\n'.format(ln,e,textwrap.fill(tws,45),ln))
 	if chosen not in tid: chosen = query_tweets(tid)
 	if chosen not in tid: 
 		sys.stdout.write('{} Not a correct tweet number.\nExiting!\n'.format(chosen))
 		sys.exit(0)
 	return chosen
-def check_tweet(tweets,log):
-	done = 0 
-	for t in tweets: 
-		if t in log: done=1
-	return done
 def show_keywords(kws):
+	"""function to ask the user to select a keyword. this might be buggy"""
 	ln,qn = make_line('_',60),make_line('_',40)
 	sys.stdout.write('KEYWORDS\n{}\n{}\n{}\n'.format(ln,textwrap.fill(' * '.join(kws),60),ln))
 	chosen_kw = input("\n{}\nPick a keyword... \n{}\n".format(qn,qn))
@@ -83,18 +120,23 @@ def show_keywords(kws):
 		sys.stderr.write('ERROR: {} is not a keyword!\nExiting!\n'.format(chosen_kw))
 		sys.exit(1)
 	return chosen_kw
+###  END OF USER FUNCTIONS ###
+
 def tweet_it(tweets,_id):
+	"""tweet the damn tweet already!"""
 	ln = make_line('_',45)
 	write_history(tweets)
 	sys.stdout.write('\n{}\nT W E E T I N G ...\n'.format(ln,ln))
-	last_status=None
+	last_status=None # variable to store the tweepy-id if you need to chain a tweet
 	for tweet in tweets: 
 		sys.stdout.write('\n{}\n{}\n{}\n'.format(ln,textwrap.fill(tweet,45),ln))
-		if last_status == None:
-			last_status = api.update_status(status=tweet,in_reply_to_status_id=_id)
-		else:
+		if last_status == None: # the _id variable below is the tweepy-id you're replying to
+			last_status = api.update_status(status=tweet,in_reply_to_status_id=_id) 
+		else: # the last_status.id is the tweepy-id of the previous tweet you made
 			last_status = api.update_status(status=tweet,in_reply_to_status_id=last_status.id)
 	sys.stdout.write('\n')
+
+#### M A I N  L O O P ####
 if __name__ == "__main__":
 	ln = make_line('-',60)
 	qn = make_line('_',40)
@@ -110,7 +152,7 @@ if __name__ == "__main__":
 		]
 	# get the tweets from users
 	ofh,usr_twt = get_tweets(users,api)
-	sys.stdout.write('\n{}\n            M E D I T A T I N G            \n{}\n'.format(ln,ln))
+	sys.stdout.write('\n{}\n            M  E  D  I  T  A  T  I  N  G             \n{}\n'.format(ln,ln))
 	t = os.system("perl parse_tweets.pl {}".format(ofh))
 	twts = ofh.replace(".txt",'.meditations.txt')
 	# get tweets
