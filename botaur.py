@@ -21,6 +21,10 @@ mining arguments:
   -u        user or users separated by commas [required]
   -n        number of tweets to mine          [default: 1]
 
+display arguments:
+
+  -b        number of tweets to display       [default: 3]
+
 optional arguments:
 
   -h        show this message and exit
@@ -106,10 +110,10 @@ def load_tweets(fh):
 def query_tweets(tid):
 	ask = input('Please select tweet according to tweet number...\n')
 	return ask
-def pick_tweets(tid, twt_dict):
+def pick_tweets(tid, twt_dict, tw_buff):
 	"""
 	this shows available tweets that match on a keyword.
-	it shows the user the first 3 tweets and asks to select one,
+	it shows the user the first tw_buff tweets and asks to select one,
 	if the user does not input a correct number, then the prompt
 	  will ask if to display more tweets. If no, the program exits.
 	  If yes, the program will display the next 3 tweets. 
@@ -119,12 +123,12 @@ def pick_tweets(tid, twt_dict):
 	WARN! bugs abound here, use at your own risk!
 	"""
 	ln = make_line('_',45)
-	sys.stdout.write('\nNumber of Tweets:    {}\nDisplaying first 3 tweets...\n\n'.format(len(tid)))
+	sys.stdout.write('\nNumber of Tweets:    {}\nDisplaying first {} tweets...\n\n'.format(len(tid),tw_buff))
 	chosen='y'
 	for i,e in enumerate(tid):
 		if chosen in tid: break
 		if i==0: i+=1
-		if i%3==0: # if the third tweet is reached
+		if i%tw_buff==0: # if the tw_buff tweet is reached
 			chosen = query_tweets(tid)
 			if chosen not in tid:
 				ask = input('\n{} Not a correct tweet number.\n    Display more tweets? [y/n]\n'.format(chosen))
@@ -166,12 +170,14 @@ def tweet_it(tweets,_id):
 #### M A I N  L O O P ####
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter, usage=__usage__, add_help=False)
-	mine_args, opt_args = parser.add_argument_group('mining arguments'), parser.add_argument_group('optional arguments')
+	mine_args, dis_args, opt_args = parser.add_argument_group('mining arguments'), parser.add_argument_group('display arguments'), parser.add_argument_group('optional arguments')
 	mine_args.add_argument('-u',type=str,default=None,required=True)
 	mine_args.add_argument('-n',type=int,default=1,required=False)
+	dis_args.add_argument('-b',type=int,default=3,required=False)
 	opt_args.add_argument('-h', '-help', required=False, action="store_true", default=False) 
 	args = parser.parse_args()
 	users, n_tweets = args.u.split(','), args.n
+	tw_buff = args.b
 	_help = args.h
 	if (_help==True or len(sys.argv)==1):
 		sys.stdout.write(__usage__)
@@ -198,7 +204,7 @@ if __name__ == "__main__":
 			cont = input("\n{}\nContinue? [y/n]\n{}\n".format(qn,qn))
 
 		# get tweets from user
-		tweets = twt_dict[pick_tweets(sorted(set(tid_dict[chosen_kw])),twt_dict)]
+		tweets = twt_dict[pick_tweets(sorted(set(tid_dict[chosen_kw])),twt_dict,tw_buff)]
 		# check if in history
 		if check_tweet(tweets,log)==1:
 			sys.stdout.write('ERROR: {}\n\nhas been tweeted before!\nSkipping... '.format(textwrap.fill(' '.join(tweets),30)))
@@ -206,7 +212,7 @@ if __name__ == "__main__":
 		# keep on tweeting
 		ask = input('\n{}\nTweet again with the same keyword? [y/n]\n{}\n'.format(qn,qn))
 		while ask=='y':
-			tweets = twt_dict[pick_tweets(sorted(set(tid_dict[chosen_kw])),twt_dict)]
+			tweets = twt_dict[pick_tweets(sorted(set(tid_dict[chosen_kw])),twt_dict,tw_buff)]
 			if check_tweet(tweets,log)==1:
 				sys.stdout.write('ERROR: {}\n\nhas been tweeted before!\nSkipping... '.format(textwrap.fill(' '.join(tweets),30)))
 			else: tweet_it(tweets,kw_dict[chosen_kw])
