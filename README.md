@@ -16,4 +16,4 @@ Listen to Marcus, listen to his thoughts, and follow on twitter
 
 [@BotAurelius]( https://twitter.com/BotAurelius)
 
-![alt_text]()
+![alt_text](https://raw.githubusercontent.com/dantaki/Marcus-Aurelius-Bot/master/img/maurelius.png)
