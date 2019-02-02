@@ -14,7 +14,8 @@ __usage__="""
 -----------------------------------------------------------
 Version {}
 Author: Danny Antaki dantaki at ucsd dot edu
-  python botaur.py  -u <user>  -n <n_tweets>  
+  python botaur.py  -u <user>  -n <n_tweets>
+                    -b <n_display>  
 	
 mining arguments:
   
