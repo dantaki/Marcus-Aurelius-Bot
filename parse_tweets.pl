@@ -3,7 +3,11 @@ use strict; use warnings;
 # list of keywords to search for in text
 undef my @keys; undef my %id; undef my %usr;
 open IN, "$ARGV[0]";
-while(<IN>){ chomp; my ($id,$usr, $kw)= split /\t/, $_; push @keys, $kw; $id{$kw}=$id; $usr{$kw}=$usr; } close IN;
+while(<IN>){ chomp; 
+	my @r = split /\t/, $_;
+	next if(scalar(@r)!=3);
+	my ($id,$usr, $kw)= @r;
+	push @keys, $kw; $id{$kw}=$id; $usr{$kw}=$usr; } close IN;
 # load mask of words to omit
 undef my %mask;
 open IN, "word_mask.txt"; while(<IN>){ chomp; my @a = split / /, $_; foreach my $w (@a){ $mask{$w}++; }} 
@@ -49,8 +53,8 @@ foreach my $KW (@keys){
 			# remove trailing whitespace until it's gone
 			do {$s =~ s/ $//; } until ($s !~ /\ $/);
 			$s =~ s/$kw/$tkw/i; # replace the keyword with the hashtag
-			$s = $s . $SIG; # add a signature 
-			$s = "$usr{$KW} ".$s; # add the user
+			$s = $s . $SIG if($s !~ /$SIG$/); # add a signature 
+			$s = "$usr{$KW} ".$s if($s !~ /^$usr{$KW}/); # add the user
 			next if(exists $done{$s}); # skip if already processed
 			# if the tweet is too long
 			if (length($s) > 240){ 
