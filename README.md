@@ -4,13 +4,14 @@ Tweet wisdom to world leaders.
 
 ## Who was Marcus Aurelius?
 
-He was last of the 5 good emperors (reign 161-180AD) who had a lifelong interested in philosophy. 
+He was last of the 5 good emperors of the Roman Empire (reign 161-180AD). He also had a lifelong interested in philosophy. 
 
-Marcus was attracted to the school of the Stoics, an austere philosophy usually summarized by the maxim
-
+Marcus read in the school of the Stoics, an austere philosophy usually summarized by the maxim
+---
 ` virtue is the only good`
+---
 
-Marcus wrote his thoughts for his own use, known today as the Meditations. This book is not only a valuable source of Stoic philosophy in the 2nd century AD but a headspring of wisdom.
+Marcus wrote his thoughts for his own use, known today as the *Meditations*. This text is not only a valuable source of Stoic philosophy in the 2nd century AD but a headspring of wisdom.
 
 Listen to Marcus, listen to his thoughts, and follow on twitter.
 
@@ -45,3 +46,8 @@ optional arguments:
 
   -h        show this message and exit
 ```
+
+## Text
+
+[Thank you Project Gutenberg!](http://www.gutenberg.org/ebooks/55317.txt.utf-8)
+
