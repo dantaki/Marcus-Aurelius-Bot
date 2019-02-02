@@ -10,9 +10,9 @@ Marcus was attracted to the school of the Stoics, an austere philosophy usually 
 
 ` virtue is the only good`
 
-Marcus wrote his thoughts for his own use, known today as the Meditations. This book is not only a valuable source of Stoic philosophy in the 2nd century AD, but a headspring for wisdom.
+Marcus wrote his thoughts for his own use, known today as the Meditations. This book is not only a valuable source of Stoic philosophy in the 2nd century AD but a headspring of wisdom.
 
-Listen to Marcus, listen to his thoughts, and follow on twitter 
+Listen to Marcus, listen to his thoughts, and follow on twitter.
 
 [@BotAurelius]( https://twitter.com/BotAurelius)
 
