@@ -35,12 +35,17 @@ usage:
 -----------------------------------------------------------
 Version 0.0.1
 Author: Danny Antaki dantaki at ucsd dot edu
-  python botaur.py  -u <user>  -n <n_tweets>
+  python botaur.py  -u <user>  -n <n_tweets> 
+                    -b <n_display>
 
 mining arguments:
 
   -u        user or users separated by commas [required]
   -n        number of tweets to mine          [default: 1]
+
+display arguments:
+
+  -b        number of tweets to display       [default: 3]
 
 optional arguments:
 
