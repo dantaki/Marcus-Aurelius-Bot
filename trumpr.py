@@ -1,7 +1,12 @@
 #!/usr/bin/env python
 import tweepy
 import datetime,json,os,random,sys,textwrap,time
-import twit
+def access_twitter(conf=None):
+	with open(conf,'r') as f: data = json.load(f)
+	auth = tweepy.OAuthHandler(data['consumer_key'], data['consumer_secret'])
+	auth.set_access_token(data['access_token'], data['access_token_secret'])
+	api = tweepy.API(auth,wait_on_rate_limit_notify=True)
+	return api
 def load_history():
 	log=[]
 	with open("tweets/marcus_aurelius.log",'r') as f:
@@ -15,7 +20,7 @@ def make_line(cha,leng): return ''.join([cha for x in range(0,leng)])
 def get_tweets(users,api):
 	usr_twt = {}
 	ln = make_line('_',30)
-	ts = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d')
+	ts = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d-%H-%M-%S')
 	ofh = 'tweets/maurelius.{}.tweets.txt'.format(ts)
 	out = open(ofh,'a')
 	sys.stdout.write('\n{}\nCollecting tweets...\n'.format(ln))
@@ -60,7 +65,7 @@ def pick_tweets(tid, twt_dict):
 					sys.exit(0)
 		tws = ' * '.join(twt_dict[e])
 		sys.stdout.write('\n{}\n{}\n{}\n{}\n'.format(ln,e,textwrap.fill(tws,45),ln))
-	if chosen=='y': chosen = query_tweets(tid)
+	if chosen not in tid: chosen = query_tweets(tid)
 	if chosen not in tid: 
 		sys.stdout.write('{} Not a correct tweet number.\nExiting!\n'.format(chosen))
 		sys.exit(0)
@@ -70,6 +75,14 @@ def check_tweet(tweets,log):
 	for t in tweets: 
 		if t in log: done=1
 	return done
+def show_keywords(kws):
+	ln,qn = make_line('_',60),make_line('_',40)
+	sys.stdout.write('KEYWORDS\n{}\n{}\n{}\n'.format(ln,textwrap.fill(' * '.join(kws),60),ln))
+	chosen_kw = input("\n{}\nPick a keyword... \n{}\n".format(qn,qn))
+	if chosen_kw not in kws:
+		sys.stderr.write('ERROR: {} is not a keyword!\nExiting!\n'.format(chosen_kw))
+		sys.exit(1)
+	return chosen_kw
 def tweet_it(tweets,_id):
 	ln = make_line('_',45)
 	write_history(tweets)
@@ -86,25 +99,33 @@ if __name__ == "__main__":
 	ln = make_line('-',60)
 	qn = make_line('_',40)
 	log = load_history()
-	api = twit.access_twitter('tweet.json')
-	users = ['realDonaldTrump']
+	api = access_twitter('tweet.json')
+	users = [
+		#'realDonaldTrump',
+		#'AOC',
+		'DonaldJTrumpJr',
+		#'TuckerCarlson',
+		#'TeamTrump'
+		#'RealJamesWoods',
+		]
 	# get the tweets from users
 	ofh,usr_twt = get_tweets(users,api)
+	sys.stdout.write('\n{}\n            M E D I T A T I N G            \n{}\n'.format(ln,ln))
 	t = os.system("perl parse_tweets.pl {}".format(ofh))
 	twts = ofh.replace(".txt",'.meditations.txt')
 	# get tweets
-	sys.stdout.write('\n{}\nM E D I T A T I N G\n{}\n'.format(ln,ln))
 	kw_dict, twt_dict, tid_dict = load_tweets(twts)
 	kws = sorted(list(set(kw_dict.keys())))
 	# print keywords
-	sys.stdout.write('KEYWORDS\n{}\n{}\n{}\n'.format(ln,textwrap.fill(' * '.join(kws),80),ln))
-	# ask for a keyword
-	chosen_kw = input("\n{}\nPick a keyword... \n{}\n".format(qn,qn))
-	if kw_dict.get(chosen_kw)==None:
-		sys.stderr.write('ERROR: {} is not a keyword!\nExiting!\n'.format(chosen_kw))
-		sys.exit(1)
+	chosen_kw = show_keywords(kws)
 	while kw_dict.get(chosen_kw)!=None:
-		sys.stdout.write('\n{}\nResponding to ...\n{}\n{}\n'.format(qn,textwrap.fill(''.join(usr_twt[int(kw_dict[chosen_kw])]),30),qn))
+		sys.stdout.write('\n{}\nResponding to ...\n\n{}\n'.format(qn,textwrap.fill(''.join(usr_twt[int(kw_dict[chosen_kw])]),30)))
+		cont = input("\n\nContinue? [y/n]\n{}\n".format(qn))
+		while cont=='n':
+			chosen_kw = show_keywords(kws)
+			sys.stdout.write('\n{}\nResponding to ...\n{}\n{}\n'.format(qn,textwrap.fill(''.join(usr_twt[int(kw_dict[chosen_kw])]),30),qn))
+			cont = input("\n{}\nContinue? [y/n]\n{}\n".format(qn,qn))
+
 		# get tweets from user
 		tweets = twt_dict[pick_tweets(sorted(set(tid_dict[chosen_kw])),twt_dict)]
 		# check if in history
@@ -122,8 +143,7 @@ if __name__ == "__main__":
 		# ask for a new keyword 
 		ask = input('\n{}\nPick a new keyword?  [y/n]\n{}\n'.format(qn,qn))
 		if ask =='y':
-			sys.stdout.write('KEYWORDS\n{}\n{}\n{}\n'.format(ln,textwrap.fill(' * '.join(kws),80),ln))
-			chosen_kw = input("\n{}\nPick a keyword... \n{}\n".format(qn,qn))
+			chosen_kw=show_keywords(kws)
 		else: 
 			sys.stdout.write('\nExiting!\n')
 			sys.exit(0)
