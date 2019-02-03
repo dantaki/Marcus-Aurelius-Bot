@@ -133,7 +133,7 @@ def pick_tweets(tid, twt_dict, tw_buff):
 			chosen = query_tweets(tid)
 			if chosen not in tid:
 				ask = input('\n{} Not a correct tweet number.\n    Display more tweets? [y/n]\n'.format(chosen))
-				if ask != 'y': 
+				if ask != 'y' and ask != '': 
 					sys.stdout.write('\nExiting!\n')
 					sys.exit(0)
 		tws = ' * '.join(twt_dict[e]) # join replies that span 2 tweets separated by a star
@@ -212,7 +212,7 @@ if __name__ == "__main__":
 		else: tweet_it(tweets,kw_dict[chosen_kw]) # troll away
 		# keep on tweeting
 		ask = input('\n{}\nTweet again with the same keyword? [y/n]\n{}\n'.format(qn,qn))
-		while ask=='y':
+		while ask=='y' or ask=='':
 			tweets = twt_dict[pick_tweets(sorted(set(tid_dict[chosen_kw])),twt_dict,tw_buff)]
 			if check_tweet(tweets,log)==1:
 				sys.stdout.write('ERROR: {}\n\nhas been tweeted before!\nSkipping... '.format(textwrap.fill(' '.join(tweets),30)))
@@ -220,7 +220,7 @@ if __name__ == "__main__":
 			ask = input('\n{}\nTweet again with the same keyword? [y/n]\n{}\n'.format(qn,qn))
 		# ask for a new keyword 
 		ask = input('\n{}\nPick a new keyword?  [y/n]\n{}\n'.format(qn,qn))
-		if ask =='y':
+		if ask =='y' or ask=='':
 			chosen_kw=show_keywords(kws)
 		else: 
 			sys.stdout.write('\nExiting!\n')
