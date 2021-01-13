@@ -4,7 +4,7 @@ Tweet wisdom to world leaders.
 
 ## Who was Marcus Aurelius?
 
-He was last of the 5 good emperors of the Roman Empire (reign 161-180AD). He also had a lifelong interested in philosophy. 
+He was last of the 5 good emperors of the Roman Empire (reign 161-180AD). He also had a lifelong interest in philosophy. 
 
 Marcus read in the school of the Stoics, an austere philosophy usually summarized by the maxim
 
